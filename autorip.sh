@@ -3,7 +3,9 @@
 DVD_DEVICE="/dev/sr0"
 LENGTH_THRESH=240 # rip titles longer than 240 seconds
 TMPDIR="/tmp"
-TARGETDIR="/tmp"
+TARGETDIR="/mnt/orangeusb/dvdbackup"
+
+DATE=`date +%Y-%m-%d`
 
 # Read an array of titles and their lengths
 mplayer -identify -frames 0 -ao null -vo null -vc null -dvd-device ${DVD_DEVICE} dvd:// 2>/dev/null > ${TMPDIR}/autorip-$$-identify.out
@@ -36,26 +38,33 @@ printf "\n"
 WRKD="${TMPDIR}/autorip.$$.${VOLUME_ID}"
 mkdir -p "${WRKD}"
 
+EPNUM=0
 for TITLE in $TITLES_LIST; do
 echo Start title $TITLE
 
+	#Episode Number (does not increment on skipped tracks)
+	EPNUM=$((EPNUM+1))
+
 	#Set Working file prefix
-	WRKF=`echo "${WRKD}/${VOLUME_ID}-E$(printf %02d $TITLE)" | sed 's/\s/-/g'`
+	WRKF=`echo "${WRKD}/${VOLUME_ID}-E$(printf %02d $EPNUM)" | sed 's/\s/-/g'`
 
-	handbrake-cli -i /dev/sr0 -t $TITLE -o "${WRKF}.mkv" -f av_mkv --no-optimize --audio-lang-list ces,eng --all-audio --subtitle-lang-list ces,eng --all-subtitles
-
-#	mkdir -p "${WRKF}-dvdbackup"
-#	dvdbackup -i ${DVD_DEVICE} -t "${TITLE}" -o "${WRKF}-dvdbackup" -p
-#	for ALANG in $ALANG_LIST; do
-#		echo mencoder here
-#	done
-	
+	handbrake-cli -i /dev/sr0 -t $TITLE -o "${WRKF}.mkv" -f av_mkv --no-optimize --audio-lang-list ces,eng --all-audio --subtitle-lang-list ces,eng --all-subtitles > "${WRKD}/.handbrake-t${TITLE}-e${EPNUM}.log"
 
 echo End title $TITLE
 done
 
 
-#rm -rf ${WRKF}-dvdbackup
-mv "${TMPDIR}/autorip.$$.${VOLUME_ID}" "${TARGETDIR}/${VOLUME_ID}"
-rm ${TMPDIR}/autorip-$$-identify.out
+# Move result to workdir
+if [ -d "${TARGETDIR}/${VOLUME_ID}" ]; then
+	# Use plain DVD name in case its unused
+	TARGETFINAL="${TARGETDIR}/${VOLUME_ID}"
+else
+	# Add suffix to distinguish from previous rips
+	TARGETFINAL="${TARGETDIR}/${VOLUME_ID}.${DATE}"
+fi
 
+mv "${TMPDIR}/autorip.$$.${VOLUME_ID}" "${TARGETFINAL}"
+mv ${TMPDIR}/autorip-$$-identify.out "${TARGETFINAL}/.autorip-identify-${DATE}.log"
+
+#All done. Open tray to indicate.
+eject "${DVD_DEVICE}"
