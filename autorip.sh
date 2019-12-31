@@ -48,7 +48,7 @@ echo Start title $TITLE
 	#Set Working file prefix
 	WRKF=`echo "${WRKD}/${VOLUME_ID}-E$(printf %02d $EPNUM)" | sed 's/\s/-/g'`
 
-	handbrake-cli -i /dev/sr0 -t $TITLE -o "${WRKF}.mkv" -f av_mkv --no-optimize --audio-lang-list ces,eng --all-audio --subtitle-lang-list ces,eng --all-subtitles > "${WRKD}/.handbrake-t${TITLE}-e${EPNUM}.log"
+	handbrake-cli -i /dev/sr0 -t $TITLE -o "${WRKF}.mkv" -f av_mkv --no-optimize --audio-lang-list ces,eng --all-audio --subtitle-lang-list ces,eng --all-subtitles 2> "${WRKD}/.handbrake-t${TITLE}-e${EPNUM}.log"
 
 echo End title $TITLE
 done
