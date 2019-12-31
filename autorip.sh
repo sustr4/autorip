@@ -71,4 +71,5 @@ mv "${TMPDIR}/autorip.$$.${VOLUME_ID}" "${TARGETFINAL}"
 mv ${TMPDIR}/autorip-$$-identify.out "${TARGETFINAL}/.autorip-identify-${DATE}.log"
 
 #All done. Open tray to indicate.
+udisksctl unmount -b /dev/sr0
 eject "${DVD_DEVICE}"
