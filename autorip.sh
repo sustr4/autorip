@@ -14,7 +14,11 @@ TITLES_LIST=`cat ${TMPDIR}/autorip-$$-identify.out | egrep 'TITLE_[0-9]*_LENGTH'
 
 #TITLES_LIST="1" #TODO remove debug opt.
 
-VOLUME_ID=`grep ID_DVD_VOLUME_ID ${TMPDIR}/autorip-$$-identify.out | sed s/.*=// | sed 's/\s/-/g'`
+if [ "$1" == "" ]; then
+	VOLUME_ID=`grep ID_DVD_VOLUME_ID ${TMPDIR}/autorip-$$-identify.out | sed s/.*=// | sed 's/\s/-/g'`
+else
+	VOLUME_ID=`echo "$1" | sed 's/\s/-/g'`
+fi
 
 ALANG_LIST=`egrep 'ID_AID_[0-9]*_LANG' ${TMPDIR}/autorip-$$-identify.out | sed s/.*=// | sort | egrep 'cs|en'`
 
