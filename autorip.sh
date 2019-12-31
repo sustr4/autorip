@@ -59,7 +59,7 @@ done
 
 
 # Move result to workdir
-if [ -d "${TARGETDIR}/${VOLUME_ID}" ]; then
+if [ ! -d "${TARGETDIR}/${VOLUME_ID}" ]; then
 	# Use plain DVD name in case its unused
 	TARGETFINAL="${TARGETDIR}/${VOLUME_ID}"
 else
