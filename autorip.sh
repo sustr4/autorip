@@ -52,7 +52,7 @@ echo Start title $TITLE
 	#Set Working file prefix
 	WRKF=`echo "${WRKD}/${VOLUME_ID}-E$(printf %02d $EPNUM)" | sed 's/\s/-/g'`
 
-	handbrake-cli -i /dev/sr0 -t $TITLE -o "${WRKF}.mkv" -f av_mkv --no-optimize --audio-lang-list ces,eng --all-audio --subtitle-lang-list ces,eng --all-subtitles 2> "${WRKD}/.handbrake-t${TITLE}-e${EPNUM}.log"
+	handbrake-cli -i "${DVD_DEVICE}" -t $TITLE -o "${WRKF}.mkv" -f av_mkv --no-optimize --audio-lang-list ces,eng --all-audio --subtitle-lang-list ces,eng --all-subtitles 2> "${WRKD}/.handbrake-t${TITLE}-e${EPNUM}.log"
 
 echo End title $TITLE
 done
@@ -71,5 +71,5 @@ mv "${TMPDIR}/autorip.$$.${VOLUME_ID}" "${TARGETFINAL}"
 mv ${TMPDIR}/autorip-$$-identify.out "${TARGETFINAL}/.autorip-identify-${DATE}.log"
 
 #All done. Open tray to indicate.
-udisksctl unmount -b /dev/sr0
+udisksctl unmount -b "${DVD_DEVICE}"
 eject "${DVD_DEVICE}"
