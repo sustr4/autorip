@@ -3,26 +3,26 @@
 DVD_DEVICE="/dev/sr0"
 LENGTH_THRESH=240 # rip titles longer than 240 seconds
 TMPDIR="/tmp"
-TARGETDIR="/mnt/orangeusb/dvdbackup"
+TARGETDIR="/mnt/krabice-video"
 
 DATE=`date +%Y-%m-%d`
 
 # Read an array of titles and their lengths
 mplayer -identify -frames 0 -ao null -vo null -vc null -dvd-device ${DVD_DEVICE} dvd:// 2>/dev/null > ${TMPDIR}/autorip-$$-identify.out
 
-TITLES_LIST=`cat ${TMPDIR}/autorip-$$-identify.out | egrep 'TITLE_[0-9]*_LENGTH' | awk -F'[_=]' -v thresh="${LENGTH_THRESH}" '{ if ($6 > thresh) { print $4 } }' | sort -n`
+TITLES_LIST=`cat ${TMPDIR}/autorip-$$-identify.out | grep -aE 'TITLE_[0-9]*_LENGTH' | awk -F'[_=]' -v thresh="${LENGTH_THRESH}" '{ if ($6 > thresh) { print $4 } }' | sort -n`
 
 #TITLES_LIST="1" #TODO remove debug opt.
 
 if [ "$1" == "" ]; then
-	VOLUME_ID=`grep ID_DVD_VOLUME_ID ${TMPDIR}/autorip-$$-identify.out | sed s/.*=// | sed 's/\s/-/g'`
+	VOLUME_ID=`grep -a ID_DVD_VOLUME_ID ${TMPDIR}/autorip-$$-identify.out | sed s/.*=// | sed 's/\s/-/g'`
 else
 	VOLUME_ID=`echo "$1" | sed 's/\s/-/g'`
 fi
 
-ALANG_LIST=`egrep 'ID_AID_[0-9]*_LANG' ${TMPDIR}/autorip-$$-identify.out | sed s/.*=// | sort | egrep 'cs|en'`
+ALANG_LIST=`grep -aE 'ID_AID_[0-9]*_LANG' ${TMPDIR}/autorip-$$-identify.out | sed s/.*=// | sort | egrep 'cs|en'`
 
-SLANG_LIST=`egrep 'ID_SID_[0-9]*_LANG' ${TMPDIR}/autorip-$$-identify.out | sed s/.*=// | sort`
+SLANG_LIST=`grep -aE 'ID_SID_[0-9]*_LANG' ${TMPDIR}/autorip-$$-identify.out | sed s/.*=// | sort`
 
 
 
@@ -57,7 +57,7 @@ echo Start title $TITLE
 echo End title $TITLE
 done
 
-
+echo Moving results to ${TARGETDIR}
 # Move result to workdir
 if [ ! -d "${TARGETDIR}/${VOLUME_ID}" ]; then
 	# Use plain DVD name in case its unused
@@ -70,6 +70,7 @@ fi
 mv "${TMPDIR}/autorip.$$.${VOLUME_ID}" "${TARGETFINAL}"
 mv ${TMPDIR}/autorip-$$-identify.out "${TARGETFINAL}/.autorip-identify-${DATE}.log"
 
+echo Ejecting
 #All done. Open tray to indicate.
 udisksctl unmount -b "${DVD_DEVICE}"
 eject "${DVD_DEVICE}"
